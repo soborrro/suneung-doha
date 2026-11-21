@@ -678,7 +678,7 @@ async function finish(timeout) {
   const raw = score, zero = !signOk();          // 필적 확인란 미기재·불일치 → 0점
   if (zero) score = 0;
   $("scoreInk").innerHTML = zero
-    ? `<s style="font-size:.5em;opacity:.7">${raw}</s> 0<small>점</small><div style="font-size:20px;margin-top:2px">필적 확인 미기재</div>`
+    ? `<s style="font-size:.5em;opacity:.7">${raw}</s> 0<small>점</small><div style="font-size:20px;margin-top:2px">필적 확인 ${signWhy()}</div>`
     : `${score}<small>점</small>`;
   setTimeout(() => { $("scoreInk").classList.add("show"); sPen(); }, 450);
   if (!$("omrMark").classList.contains("stamped")) { $("omrMark").innerHTML = SEAL; $("omrMark").classList.add("stamped"); }
@@ -692,6 +692,8 @@ async function finish(timeout) {
 
 // 필적 확인 문구가 정확히 적혔는지 (띄어쓰기는 무시)
 function signOk() { return $("sign").value.replace(/\s+/g, "") === SIGN.replace(/\s+/g, ""); }
+// 0점 사유: 아예 안 썼으면 '미기재', 다른 걸 썼으면 '불일치'
+function signWhy() { return $("sign").value.trim() ? "불일치" : "미기재"; }
 // 필적 확인란 미기재·불일치 시 경고 → 그래도 제출하면 true (0점 처리), 작성하러 가면 false
 function signNotice() {
   const empty = !$("sign").value.trim();
@@ -701,7 +703,7 @@ function signNotice() {
       <h2 style="letter-spacing:.05em">필적 확인란을 ${empty ? "작성하지 않았습니다" : "확인하십시오"}</h2>
       <p class="say">${empty ? "필적 확인란이 비어 있습니다." : "필적 확인란의 문구가 다릅니다."}<br>답안지의 필적 확인란에 아래 문구를 정자로 기재하십시오.</p>
       <p class="say" style="font-size:18px;color:var(--ink);font-weight:800;margin:12px 0">"${SIGN}"</p>
-      <p class="say"><b style="color:var(--red)">미기재 시 0점 처리되는데도 제출하시겠어요?</b></p>
+      <p class="say"><b style="color:var(--red)">${empty ? "미기재" : "잘못 기재"} 시 0점 처리되는데도 제출하시겠어요?</b></p>
       <div class="acts">
         <button class="primary" id="signGo">작성하러 가기</button>
         <button id="signAnyway">그래도 제출 (0점)</button>
@@ -764,7 +766,7 @@ function showReport(score, raw, zero, first) {
     <p class="verdict${first ? " late" : ""}${grade === 9 ? " sad" : ""}">${score === 100 ? `<span class="badge">만점</span>` : ""}${grade}등급 · ${title}</p>
     <p class="say">${say}</p>
     <p class="say">맞힌 문항 ${correct} / ${Q.length}</p>
-    <p class="appeal">※ ${appeals.join("<br>※ ")}<br>※ 필적 확인: ${signOk ? "일치 ✓" : `<b style="color:var(--red)">미기재 — 0점 처리되었습니다.</b> (채점 결과는 ${raw}점이었습니다)`}</p>
+    <p class="appeal">※ ${appeals.join("<br>※ ")}<br>※ 필적 확인: ${signOk ? "일치 ✓" : `<b style="color:var(--red)">${signWhy() === "미기재" ? "미기재 — 0점 처리되었습니다." : `불일치 — "${esc($("sign").value.trim())}"(으)로 잘못 기재하여 0점 처리되었습니다.`}</b> (채점 결과는 ${raw}점이었습니다)`}</p>
     <div class="acts">
       <button id="copyBtn">결과 복사</button>
       <button id="closeBtn">채점된 시험지 보기</button>
